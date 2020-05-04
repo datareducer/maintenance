@@ -1,3 +1,5 @@
+/*Топ запросов в кэше планов запросов по нагрузке на CPU. Выводит статистику и план выполнения каждого запроса*/
+
 SELECT 
 	topq.statement_text,
 	topq.creation_time,
@@ -7,13 +9,15 @@ SELECT
 	topq.avg_physical_reads,
 	topq.avg_logical_reads,
 	topq.max_dop,
+	topq.plan_versions_count,
 	qp.query_plan
-		
 FROM 
 (
 	SELECT TOP 20
 		MIN(qstats.statement_text) AS statement_text,
 		MIN(qstats.plan_handle) AS plan_handle,
+		/*Для одного и того же запроса в кэше может быть несколько планов выполнения*/
+		COUNT(qstats.plan_handle) AS plan_versions_count,
 		MIN(qstats.creation_time) AS creation_time,
 		MAX(qstats.last_execution_time) AS last_execution_time,
 		SUM(qstats.execution_count) AS execution_count,
