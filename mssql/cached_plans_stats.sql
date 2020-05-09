@@ -9,15 +9,13 @@ SELECT
 	topq.avg_physical_reads,
 	topq.avg_logical_reads,
 	topq.max_dop,
-	topq.plan_versions_count,
+	topq.plan_handle,
 	qp.query_plan
 FROM 
 (
 	SELECT TOP 20
 		MIN(qstats.statement_text) AS statement_text,
 		MIN(qstats.plan_handle) AS plan_handle,
-		/*Для одного и того же запроса в кэше может быть несколько планов выполнения*/
-		COUNT(qstats.plan_handle) AS plan_versions_count,
 		MIN(qstats.creation_time) AS creation_time,
 		MAX(qstats.last_execution_time) AS last_execution_time,
 		SUM(qstats.execution_count) AS execution_count,
@@ -44,11 +42,10 @@ FROM
 		FROM sys.dm_exec_query_stats AS qs
 		CROSS APPLY sys.dm_exec_sql_text(qs.plan_handle) AS st
 
-		WHERE st.dbid = DB_ID('erpwork_1c')
-		AND st.text LIKE 'SELECT%' ) AS qstats
+		WHERE st.dbid = DB_ID('erpwork_1c') ) AS qstats
 
 	GROUP BY qstats.query_hash
-	/*HAVING SUM(qstats.execution_count) > 1*/
+	HAVING MIN(qstats.statement_text) LIKE 'SELECT%'
 	ORDER BY avg_worker_time DESC
 
 ) topq
