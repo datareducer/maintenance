@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns="http://v8.1c.ru/v8/tech-log">
+<dump create="true" location="D:\Debug\dumps" type="0" prntscrn="false"/>
+
+<log location="D:\Debug\logs_dbmssql" history="600">
+	<event>
+        	<eq property="name" value="DBMSSQL"/>
+		<eq property="p:processName" value="erpwork"/>
+		<like property="sql" value="%LEFT OUTER JOIN dbo.\_Document761 T2%"/>
+	</event>
+
+	<property name="all"/>
+</log>
+
+</config>
