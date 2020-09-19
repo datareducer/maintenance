@@ -6,7 +6,6 @@ use strict;
 use Data::Dumper;
 
 my @tlocks;
-my @victims;
 my @conflicts;
 
 my $fdate;
@@ -23,10 +22,10 @@ while (<>) {
 		
 		next if defined $6; # Блокировка была наложена ранее, пропускаем событие
 						
-		my $tlock = {file => $ARGV, eventTime => "$fdate $1", connectID => $2, regions => $3, locks => $4, waitConnections => $5};
+		my $tlock = {file => $ARGV, eventTime => "$fdate:$1", connectID => $2, regions => $3, locks => $4, waitConnections => $5};
 					
 		 if ($ttwc && $5 == $ttwc) { # WaitConnections событий TTIMEOUT и TLOCK "жертвы" должны совпадать
-			push @victims, $tlock;
+			push @conflicts, {victim => $tlock};
 			undef $ttwc;
 		 } else {
 			push @tlocks, $tlock;
@@ -41,29 +40,14 @@ while (<>) {
 }
 
 for my $tlock (@tlocks) {
-	for my $victim (@victims) {
-		if ($tlock->{connectID} == $victim->{waitConnections}	# connectID "виновника" должен совпадать с waitConnections "жертвы"
-			&& $tlock->{regions} eq $victim->{regions}	 		# Пространства блокировок "виновника" и "жертвы" должны совпадать
-			&& $tlock->{eventTime} lt $victim->{eventTime}) {	# Событие "виновника" раньше события "жертвы"
+	for my $conflict (@conflicts) {
+		if ($tlock->{connectID} == $conflict->{victim}->{waitConnections}	# connectID "виновника" должен совпадать с waitConnections "жертвы"
+			&& $tlock->{regions} eq $conflict->{victim}->{regions}	# Пространства блокировок "виновника" и "жертвы" должны совпадать
+			&& $tlock->{eventTime} lt $conflict->{victim}->{eventTime}) {	# Событие "виновника" раньше события "жертвы"
 			
-			push @conflicts, {victim => $victim, causer => $tlock};
+			$conflict->{causer} = $tlock;
 		}
 	}
-}
-
-# Убедимся, что нашли всех "виновников" 
-for my $victim (@victims) {
-	my $found;
-	for my $i (0..$#conflicts) {
-		if ($victim eq $conflicts[$i]{victim}) {
-			$found = 1;
-			last;
-		}
-	}
-	if (not defined $found) {	
-		push @conflicts, {victim => $victim, causer => undef};
-	}
-	undef $found;
 }
 
 $Data::Dumper::Deepcopy = 1;
