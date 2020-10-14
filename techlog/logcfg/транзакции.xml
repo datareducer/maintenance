@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<config xmlns="http://v8.1c.ru/v8/tech-log">
+
+	<log location="R:\logs_" history="600">
+
+		<event>
+			<eq property="name" value="SDBL"/>
+			<eq property="p:processName" value="ibase"/>
+			<like property="Func" value="%Transaction%"/>
+		</event>
+
+		<property name="all"/>
+
+	</log>
+
+</config>
