@@ -1,6 +1,7 @@
 #!/usr/bin/perl -w
 
-#$ perl -w ttimeouts.plx  /r/Таймауты\ на\ управляемых\ блокировках/logs_/*/* > result.txt
+# Все превышения времени ожидания блокировки
+# $ perl -w ttimeouts.plx  /r/Таймауты\ на\ управляемых\ блокировках/logs_/*/* > result.txt
 
 use strict;
 use Data::Dumper;
@@ -18,7 +19,7 @@ while (<>) {
 		$fdate = $1;
 	}
 	
-	if (/^(\d{2}:\d{2}.\d+)-\d+,TLOCK.+?connectID=(\d+).+Regions=(.+?),Locks='(.+)',WaitConnections=(\d*)(,alreadyLocked=true)?/) {
+	if (/^(\d{2}:\d{2}\.\d+)-\d+,TLOCK.+?connectID=(\d+).+Regions=(.+?),Locks=(.+),WaitConnections=(\d*)(,alreadyLocked=true)?/) {
 		
 		next if defined $6; # Блокировка была наложена ранее, пропускаем событие
 						
